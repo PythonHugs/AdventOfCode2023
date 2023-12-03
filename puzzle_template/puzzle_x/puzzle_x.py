@@ -1,4 +1,4 @@
-""" Puzzle 1 for Advent of Code 2023 """
+""" Puzzle X for Advent of Code 2023 """
 # https://adventofcode.com/2023/day/x
 
 
