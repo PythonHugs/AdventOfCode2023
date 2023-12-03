@@ -1,6 +1,5 @@
 """ Puzzle 3 for Advent of Code 2023 """
 # https://adventofcode.com/2023/day/3
-import copy
 
 
 def read_input(input_file):
