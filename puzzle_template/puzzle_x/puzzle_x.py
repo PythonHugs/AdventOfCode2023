@@ -6,7 +6,7 @@ def read_input(input_file):
     with open(input_file, 'r') as file:
         puzzle_input = []
         for line in file:
-            puzzle_input.append(line)
+            puzzle_input.append(line[:-1])
         return puzzle_input
 
 
