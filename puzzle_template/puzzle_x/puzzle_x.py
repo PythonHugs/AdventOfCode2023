@@ -6,12 +6,16 @@ def read_input(input_file):
     with open(input_file, 'r') as file:
         puzzle_input = []
         for line in file:
-            puzzle_input.append(line[:-1])
+            if '\n' in line:
+                puzzle_input.append(line[:-1])
+            else:
+                puzzle_input.append(line)
         return puzzle_input
 
 
 def main():
-    pass
+    puzzle_input = read_input('puzzle_X_example_input.txt')
+    print(puzzle_input)
 
 
 if __name__ == '__main__':
