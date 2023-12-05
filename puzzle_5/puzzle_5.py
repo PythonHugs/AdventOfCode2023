@@ -1,6 +1,5 @@
 """ Puzzle 5 for Advent of Code 2023 """
 # https://adventofcode.com/2023/day/5
-import json
 
 
 def read_input(input_file):
