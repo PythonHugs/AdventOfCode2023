@@ -1,5 +1,10 @@
 """ Part 2 for Puzzle 5 for Advent of Code 2023 """
 # https://adventofcode.com/2023/day/5
+import asyncio
+import concurrent.futures
+import multiprocessing
+import numpy as np
+from functools import partial
 
 
 def read_input(input_file):
@@ -37,26 +42,52 @@ def parse_data(puzzle_input):
     return seed_data
 
 
-def math_trick(target, maps, seed_data):
-    for map in maps:
-        print(map)
-        ranges = seed_data[map]
+def math_trick(maps, seed_data, target):
+    print('')
+    print(target)
+    for seed_map in maps:
+        print(seed_map)
+        ranges = seed_data[seed_map]
         for r in ranges:
-            srs = int(seed_data[map][r]['source_range_start'])
-            r_length = int(seed_data[map][r]['range_length'])
+            srs = int(seed_data[seed_map][r]['source_range_start'])
+            r_length = int(seed_data[seed_map][r]['range_length'])
             r_limit = srs + r_length - 1
-            drs = int(seed_data[map][r]['destination_range_start'])
+            drs = int(seed_data[seed_map][r]['destination_range_start'])
             d_limit = drs + r_length - 1
+            if not srs <= target <= r_limit:
+                print(f'skipped{r}')
+                continue
             if srs <= target <= r_limit:
                 diff = r_limit - target
                 c = d_limit - diff
                 print(target, c)
+                # print('')
                 if len(maps) == 1:
                     return c
-                return math_trick(c, maps[1:], seed_data)
+                return math_trick(maps[1:], seed_data, c)
+                # maps = maps[1:]
         if len(maps) == 1:
             return target
-        return math_trick(target, maps[1:], seed_data)
+        return math_trick(maps[1:], seed_data, target)
+        # maps = maps[1:]
+
+
+async def check_array(master_seed_list, math_trick_partial):
+    cpu_count = multiprocessing.cpu_count() - 2
+    chunks = np.array_split(master_seed_list, cpu_count)
+    executor = concurrent.futures.ProcessPoolExecutor(max_workers=cpu_count)
+    tasks = [asyncio.get_running_loop().run_in_executor(executor, check_chunk, chunk, math_trick_partial) for chunk in chunks]
+    results = await asyncio.gather(*tasks)
+    results = [item for sublist in results for item in sublist]
+    return results
+
+
+def check_chunk(chunk, math_trick_partial):
+    pool = multiprocessing.Pool()
+    location = pool.map(math_trick_partial, chunk)
+    pool.close()
+    pool.join()
+    return location
 
 
 def main():
@@ -66,31 +97,26 @@ def main():
 
     seeds = seed_data['seeds']
     seed_list = []
-    master_seed_list = []
     for i in range(0, len(seeds) - 1, 2):
         first_seed = int(seeds[i])
         second_seed = int(seeds[i + 1])
         seed_pair = (first_seed, second_seed)
         seed_list.append(seed_pair)
-        # last_seed = first_seed + int(seeds[i + 1])
-        # seed_list = list(range(first_seed, last_seed + 1))
     print(seed_list)
-    #     master_seed_list.extend(seed_list)
-    # print(master_seed_list)
-
-    # for seed_pair in seed_list:
-    #     for x in range(seed_pair[0], seed_pair[0] + seed_pair[1]):
-    #         print(x)
 
     maps = list(seed_data.keys())[1:]
+    master_seed_list = []
     seed_locations = []
-    for seed_pair in seed_list:
+    test_list = [seed_list[0]]
+    print(test_list)
+    for seed_pair in test_list:
         for seed in range(seed_pair[0], seed_pair[0] + seed_pair[1]):
-            # for seed in master_seed_list:
-            print('')
-            print(seed)
-            seed_locations.append(math_trick(int(seed), maps, seed_data))
-    print(seed_locations)
+            master_seed_list.append(seed)
+        # print(master_seed_list)
+        math_trick_partial = partial(math_trick, maps, seed_data)
+        seed_locations.extend(asyncio.run(check_array(master_seed_list, math_trick_partial)))
+        print(seed_locations)
+        master_seed_list = []
     seed_locations.sort()
     print(seed_locations[0])
 
