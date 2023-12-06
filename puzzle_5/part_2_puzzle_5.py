@@ -1,7 +1,5 @@
 """ Part 2 for Puzzle 5 for Advent of Code 2023 """
-import copy
 # https://adventofcode.com/2023/day/5
-import json
 
 
 def read_input(input_file):
@@ -62,32 +60,9 @@ def get_map_ranges(seed_data):
     return map_ranges
 
 
-def equation(location, ranges):
-    d_start, d_end, s_start, s_end, r_length = ranges
-    offset = d_end - location
-    answer = s_end - offset
-    print(f'{s_end} - ({d_end} - {location}) = {answer}')
-    return answer
-
-
-def should_skip(answer, ranges):
-    d_start, d_end, s_start, s_end, r_length = ranges
-    if not s_start <= answer <= s_end:
-        return True
-    return False
-
-
-def is_seed(potential_seed, seed_range):
-    s_start, s_end = seed_range
-    if s_start <= potential_seed <= s_end:
-        return True
-    return False
-
-
 def get_range_maps(seed_maps, map_ranges):
     range_maps = {}
     for mapping in seed_maps:
-        print(mapping)
         d_range = []
         for r in map_ranges[mapping]['ranges']:
             d_start, d_end, s_start, s_end, r_length = r
@@ -100,7 +75,6 @@ def get_range_maps(seed_maps, map_ranges):
 def search(target, range_maps, map_keys):
     d_range = range_maps[map_keys[0]]['d_range']
     for r in d_range:
-        # print(r)
         d_start, d_end, offset = r
         if d_start <= target <= d_end:
             new_target = target - offset
@@ -119,23 +93,9 @@ def main():
     # print('')
     seeds = seed_data['seeds']
     seed_ranges = get_seed_ranges(seeds)
-    print(seed_ranges)
-    print('')
-
-    min_seeds = []
-    for sr in seed_ranges:
-        min_seeds.append(sr[0])
-    min_seeds.sort()
-    print(min_seeds)
-
     map_ranges = get_map_ranges(seed_data)
-    print(json.dumps(map_ranges, indent=4))
-    print('')
     seed_maps = list(map_ranges.keys())
-    print(seed_maps)
-
     range_maps = get_range_maps(seed_maps, map_ranges)
-    print(range_maps)
 
     location = 0
     seed_found = False
