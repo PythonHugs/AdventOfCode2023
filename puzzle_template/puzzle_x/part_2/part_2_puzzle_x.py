@@ -14,7 +14,7 @@ def read_input(input_file):
 
 
 def main():
-    puzzle_input = read_input('puzzle_X_example_input.txt')
+    puzzle_input = read_input('part_2_puzzle_X_example_input.txt')
     print(puzzle_input)
 
 
