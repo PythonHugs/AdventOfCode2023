@@ -16,6 +16,7 @@ def read_input(input_file):
 def main():
     puzzle_input = read_input('puzzle_X_example_input.txt')
     print(puzzle_input)
+    print('')
 
 
 if __name__ == '__main__':
