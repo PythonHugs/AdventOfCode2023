@@ -1,6 +1,5 @@
 """ Part 2 for Puzzle 7 for Advent of Code 2023 """
 # https://adventofcode.com/2023/day/7
-from collections import Counter
 
 
 def read_input(input_file):
@@ -49,6 +48,22 @@ def count_hand(hand):
     for card in hand:
         card_key[card] += 1
     hand_type = ''
+
+    max_card = max(card_key, key=card_key.get)
+    print(hand)
+    print(f'max card is {max_card} x {card_key[max_card]}')
+    if max_card != 'J':
+        card_key[max_card] += card_key['J']
+        card_key['J'] = 0
+    elif max_card == 'J':
+        temp_j_holder = card_key['J']
+        card_key['J'] = 0
+        max_card = max(card_key, key=card_key.get)
+        card_key[max_card] += temp_j_holder
+    print('-----')
+    print(hand.replace('J', max_card))
+    print(f'max card is {max_card} x {card_key[max_card]}')
+    print('')
 
     if 5 in card_key.values():
         hand_type = 'five of a kind'
@@ -100,19 +115,11 @@ def translate_cards(categorized_hands):
                 elif card == 'Q':
                     translated_cards.append(12)
                 elif card == 'J':
-                    translated_cards.append(11)
+                    translated_cards.append(1)
                 elif card == 'T':
                     translated_cards.append(10)
                 else:
                     translated_cards.append(int(card))
-
-            # print(translated_cards)
-            # counter = Counter(translated_cards)
-            # most_common_card = counter.most_common(1)[0][0]
-            # print(most_common_card)
-            # translated_cards = [most_common_card if i == 11 else i for i in translated_cards]
-            # print(translated_cards)
-
             categorized_hands[hand_type][categorized_hands[hand_type].index(hand)]['cards'] = translated_cards
             translated_cards = []
 
@@ -148,15 +155,8 @@ def determine_winnings(translated_hands):
     return sum(winnings)
 
 
-def break_ties(categorized_hands):
-    pass
-
-
-
 def main():
-    puzzle_input = read_input('part_2_puzzle_7_example_input.txt')
-    # puzzle_input = read_input('part_2_puzzle_7_alt_example_input.txt')
-    # puzzle_input = read_input('part_2_puzzle_7_input.txt')
+    puzzle_input = read_input('part_2_puzzle_7_input.txt')
     print(puzzle_input)
     print('')
 
@@ -178,16 +178,12 @@ def main():
     output_hands_data(categorized_hands)
 
     translate_cards(categorized_hands)
-    print('')
     output_hands_data(categorized_hands)
 
-    # translated_hands = translate_hands(categorized_hands)
-    break_ties(categorized_hands)
+    translated_hands = translate_hands(categorized_hands)
 
-    # total_winnings = determine_winnings(translated_hands)
-    # print(total_winnings)
-
-
+    total_winnings = determine_winnings(translated_hands)
+    print(total_winnings)
 
 
 if __name__ == '__main__':
