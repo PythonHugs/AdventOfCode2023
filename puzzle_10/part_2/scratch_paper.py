@@ -198,8 +198,8 @@ def paint(coords, converted_map, paint_char='X'):
 def print_maps(tile_map):
     for row in tile_map:
         print(row)
-
-
+        
+        
 def flood(painted_grid, pipes, fill_char='I', spread=True):
     if spread:
         for i, row in enumerate(painted_grid):
