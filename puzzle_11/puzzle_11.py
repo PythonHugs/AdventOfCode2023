@@ -23,9 +23,7 @@ def expand_empty_columns(puzzle_input):
     expanded_cols_index = []
     row_length = len(puzzle_input[0])
     col_length = len(puzzle_input)
-    # empty_col = ['.' for _ in range(row_length)]
     for i in range(row_length):
-        col_spots = []
         is_col_empty = True
         for j in range(col_length):
             if puzzle_input[j][i] != '.':
@@ -64,11 +62,7 @@ def expand_empty_rows(puzzle_input):
 
     for i, row in enumerate(puzzle_input):
         if row == alt_row or row == alt_row2:
-            # expanded_rows_index.append(i)
             puzzle_input[i] = empty_row
-            # puzzle_input.insert(i, alt_row)
-    # for ex_row in expanded_rows_index:
-    #     puzzle_input.insert(ex_row, alt_row)
     return puzzle_input
 
 
