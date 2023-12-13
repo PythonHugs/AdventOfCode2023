@@ -13,8 +13,25 @@ def read_input(input_file):
         return puzzle_input
 
 
+def parse_input(puzzle_input):
+    parsed_input = []
+    for line in puzzle_input:
+        springs, possibilities = line.split(' ')
+        springs_list = list(springs)
+        possibilities_list = list(int(p) for p in possibilities if p != ',')
+        parsed_input.append((springs_list, possibilities_list))
+    return parsed_input
+
+
+
 def main(puzzle_input):
     print(puzzle_input)
+    print('')
+
+    puzzle_input = parse_input(puzzle_input)
+
+    puzzle_line_1 = puzzle_input[0]
+    print(puzzle_line_1)
     print('')
 
 
