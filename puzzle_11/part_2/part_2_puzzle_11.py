@@ -1,7 +1,6 @@
 """ Part 2 for Puzzle 11 for Advent of Code 2023 """
 # https://adventofcode.com/2023/day/11
 import itertools
-import copy
 
 
 def read_input(input_file):
@@ -20,7 +19,7 @@ def make_puzzle_list(puzzle_input):
     return listed_puzzle_input
 
 
-def expand_empty_columns(puzzle_input):
+def find_empty_columns(puzzle_input):
     expanded_cols_index = []
     row_length = len(puzzle_input[0])
     col_length = len(puzzle_input)
@@ -32,51 +31,24 @@ def expand_empty_columns(puzzle_input):
                 break
         if is_col_empty:
             expanded_cols_index.append(i)
-    offset = 0
-    print(len(expanded_cols_index))
-    for ex_col in expanded_cols_index:
-        for i in range(col_length):
-            puzzle_input[i] = puzzle_input[i][:ex_col + offset] + ['W'] + puzzle_input[i][ex_col + offset:]
-        offset += 1
-    print_grid(puzzle_input)
-
-    for i in range(row_length):
-        for j in range(col_length):
-            if puzzle_input[j][i] == 'W':
-                puzzle_input[j][i] = '.'
-    return puzzle_input, expanded_cols_index
+    return expanded_cols_index
 
 
-def expand_empty_rows(puzzle_input):
+def find_empty_rows(puzzle_input):
     expanded_rows_index = []
     row_length = len(puzzle_input[0])
     empty_row = ['.' for _ in range(row_length)]
-    alt_row = ['W' for _ in range(row_length)]
-    alt_row2 = ['O' for _ in range(row_length)]
     for i, row in enumerate(puzzle_input):
         if row == empty_row:
             expanded_rows_index.append(i)
-            puzzle_input[i] = alt_row2
-            puzzle_input.insert(i, alt_row)
     print(len(expanded_rows_index))
-    print_grid(puzzle_input)
-
-    for i, row in enumerate(puzzle_input):
-        if row == alt_row or row == alt_row2:
-            puzzle_input[i] = empty_row
-    return puzzle_input, expanded_rows_index
-
-
-def expand_grid(puzzle_input):
-    puzzle_input, expanded_rows_index = expand_empty_rows(puzzle_input)
-    puzzle_input, expanded_columns_index = expand_empty_columns(puzzle_input)
-    return puzzle_input, expanded_rows_index, expanded_columns_index
+    return expanded_rows_index
 
 
 def print_grid(puzzle_input):
     for row in puzzle_input:
-        # print(row)
-        print(''.join(row))
+        str_row = [str(i) for i in row]
+        print(''.join(str_row))
     print('')
 
 
@@ -94,28 +66,34 @@ def generate_pairs(n):
     return list(itertools.combinations(range(1, n), 2))
 
 
-def calc_distance(coords_1, coords_2):
-    return abs(coords_1[0] - coords_2[0]) + abs(coords_1[1] - coords_2[1])
+def calc_distance(coords_1, coords_2, expanded_rows, expanded_columns):
+    expansion_factor = 1000000  # One million as per problem's rules
+
+    # Identify the range of rows/columns travelled
+    travelled_rows = range(min(coords_1[0], coords_2[0]), max(coords_1[0], coords_2[0]) + 1)
+    travelled_columns = range(min(coords_1[1], coords_2[1]), max(coords_1[1], coords_2[1]) + 1)
+
+    # Identify which of these are empty
+    empty_rows_travelled = set(travelled_rows).intersection(expanded_rows)
+    empty_columns_travelled = set(travelled_columns).intersection(expanded_columns)
+
+    # Calculate the distance
+    row_distance = abs(coords_1[0] - coords_2[0]) + len(empty_rows_travelled) * (expansion_factor - 1)
+    col_distance = abs(coords_1[1] - coords_2[1]) + len(empty_columns_travelled) * (expansion_factor - 1)
+
+    return row_distance + col_distance
 
 
-def get_pair_coords(pair, puzzle_input, expanded_columns_index, expanded_rows_index):
+def get_pair_coords(pair, puzzle_input):
     col_length = len(puzzle_input)
-    row_length = len(puzzle_input[0])
     pair_coords = []
-    empty_row_counter = 0
-    empty_column_counter = 0
-    expansion = 10
     for n in pair:
         for i in range(col_length):
-            if i in expanded_columns_index:
-                empty_column_counter += expansion
-            for j in range(row_length):
-                if j in expanded_rows_index:
-                    empty_row_counter += expansion
-                if puzzle_input[i][j] == n:
-                    c = (i + empty_column_counter, j + empty_row_counter)
+            try:
+                c = (i, puzzle_input[i].index(n))
+            except ValueError:
+                continue
         pair_coords.append(c)
-        empty_column_counter = empty_row_counter = 0
     return pair_coords
 
 
@@ -126,21 +104,12 @@ def main(puzzle_input):
     print_grid(puzzle_input)
     print(len(puzzle_input))
 
-    original_puzzle = copy.deepcopy(puzzle_input)
-
-    puzzle_input, expanded_rows_index, expanded_columns_index = expand_grid(puzzle_input)
-    print_grid(puzzle_input)
-    print(len(puzzle_input))
-    print(len(puzzle_input[0]))
-
-    print('')
-    print(expanded_columns_index)
-    print(expanded_rows_index)
-    print('')
+    expanded_columns_index = find_empty_columns(puzzle_input)
+    expanded_rows_index = find_empty_rows(puzzle_input)
 
     puzzle_input, gal_num = number_galaxies(puzzle_input)
-    alt_puzzle, gal_num = number_galaxies(original_puzzle)
-    # print_grid(puzzle_input)
+    # alt_puzzle, gal_num = number_galaxies(original_puzzle)
+    print_grid(puzzle_input)
 
     gal_pairs = generate_pairs(gal_num)
     print(gal_pairs)
@@ -149,7 +118,7 @@ def main(puzzle_input):
 
     pair_coords = []
     for pair in gal_pairs:
-        pc = get_pair_coords(pair, alt_puzzle, expanded_columns_index, expanded_rows_index)
+        pc = get_pair_coords(pair, puzzle_input)
         pair_coords.append(pc)
     print(pair_coords)
     print(len(pair_coords))
@@ -157,7 +126,7 @@ def main(puzzle_input):
 
     distances = []
     for coords in pair_coords:
-        distance = calc_distance(coords[0], coords[1])
+        distance = calc_distance(coords[0], coords[1], expanded_rows_index, expanded_columns_index)
         distances.append(distance)
     print(distances)
     print(len(distances))
@@ -167,6 +136,6 @@ def main(puzzle_input):
 
 
 if __name__ == '__main__':
-    puzzle_input = read_input('part_2_puzzle_11_example_input.txt')
-    # puzzle_input = read_input('part_2_puzzle_11_input.txt')
+    # puzzle_input = read_input('part_2_puzzle_11_example_input.txt')
+    puzzle_input = read_input('part_2_puzzle_11_input.txt')
     main(puzzle_input)
